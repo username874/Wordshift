@@ -146,3 +146,20 @@ function updateBoard() {
         }
     }
 }
+async function testSupabase() {
+
+    const { data, error } = await supabase
+        .from("puzzles")
+        .select("word")
+        .eq("id", 1)
+        .single();
+
+    if (error) {
+        console.error("Supabase error:", error);
+        return;
+    }
+
+    console.log("Word from Supabase:", data.word);
+}
+
+testSupabase();
