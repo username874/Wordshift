@@ -39,12 +39,11 @@ document.addEventListener("keydown", function(event) {
     }
 
     // Backspace
-    else if (event.key === "Backspace") {
+  else if (event.key === "Backspace") {
 
-        currentGuess = currentGuess.slice(0, -1);
-        updateBoard();
-    }
-
+    currentGuess = currentGuess.slice(0, -1);
+    updateBoard();
+}
     // Enter
     else if (event.key === "Enter") {
 
