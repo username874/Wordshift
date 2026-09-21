@@ -1,5 +1,5 @@
 const board = document.getElementById("game-board");
-const ANSWER = "APPLE";
+
 const ROWS = 10;
 const COLS = 5;
 const ANSWER = "APPLE";
