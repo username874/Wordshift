@@ -27,44 +27,34 @@ for (let row = 0; row < ROWS; row++) {
 // Listen for keyboard presses
 document.addEventListener("keydown", function(event) {
 
-    const key = event.key.toUpperCase();
+    // Backspace
+    if (event.key === "Backspace") {
 
-    // If it's a letter
-    if (key >= "A" && key <= "Z") {
+        event.preventDefault();
 
-        if (currentGuess.length < COLS) {
-            currentGuess += key;
-            updateBoard();
-        }
+        currentGuess = currentGuess.slice(0, -1);
+        updateBoard();
+
+        return;
     }
 
-    // Backspace
- else if (event.key === "Backspace") {
-
-    event.preventDefault();
-
-    currentGuess = currentGuess.slice(0, -1);
-    updateBoard();
-}
     // Enter
-    else if (event.key === "Enter") {
+    if (event.key === "Enter") {
 
         if (currentGuess.length === COLS) {
             console.log("Guess submitted:", currentGuess);
         }
+
+        return;
     }
-});
 
+    // Letters only
+    if (/^[a-zA-Z]$/.test(event.key)) {
 
-// Update the tiles
-function updateBoard() {
+        if (currentGuess.length < COLS) {
 
-    const row = board.children[currentRow];
-
-    for (let col = 0; col < COLS; col++) {
-
-        const tile = row.children[col];
-
-        tile.textContent = currentGuess[col] || "";
+            currentGuess += event.key.toUpperCase();
+            updateBoard();
+        }
     }
-}
+};
