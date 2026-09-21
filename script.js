@@ -39,7 +39,9 @@ document.addEventListener("keydown", function(event) {
     }
 
     // Backspace
-  else if (event.key === "Backspace") {
+ else if (event.key === "Backspace") {
+
+    event.preventDefault();
 
     currentGuess = currentGuess.slice(0, -1);
     updateBoard();
