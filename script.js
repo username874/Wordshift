@@ -85,14 +85,18 @@ function updateBoard() {
 }
 function checkGuess() {
 
+    const row = board.children[currentRow];
+
     for (let i = 0; i < COLS; i++) {
 
         const guessedLetter = currentGuess[i];
         const answerLetter = ANSWER[i];
 
-        console.log(
-            guessedLetter,
-            answerLetter
-        );
+        const tile = row.children[i];
+
+        if (guessedLetter === answerLetter) {
+            tile.style.backgroundColor = "red";
+            tile.style.color = "white";
+        }
     }
 }
