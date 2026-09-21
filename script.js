@@ -160,8 +160,25 @@ const puzzleChannel = db
         },
         function(payload) {
 
-            console.log("Puzzle changed!", payload);
+    console.log("Puzzle changed!", payload);
 
+    // Clear the board
+    for (let row = 0; row < ROWS; row++) {
+
+        for (let col = 0; col < COLS; col++) {
+
+            const tile = board.children[row].children[col];
+
+            tile.textContent = "";
+            tile.style.backgroundColor = "";
+            tile.style.color = "";
         }
+    }
+
+    // Start the new puzzle from the first row
+    currentGuess = "";
+    currentRow = 0;
+
+}
     )
     .subscribe();
