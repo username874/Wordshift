@@ -7,14 +7,15 @@ const supabase = window.supabase.createClient(
 );
 
 
-
 const board = document.getElementById("game-board");
 
 const ROWS = 10;
 const COLS = 5;
 const ANSWER = "APPLE";
+
 let currentGuess = "";
 let currentRow = 0;
+
 
 // Create the game board
 for (let row = 0; row < ROWS; row++) {
@@ -50,23 +51,22 @@ document.addEventListener("keydown", function(event) {
 
 
     // Enter
-    // Enter
-if (event.key === "Enter") {
+    if (event.key === "Enter") {
 
-    if (currentGuess.length === COLS) {
+        if (currentGuess.length === COLS) {
 
-        console.log("Guess submitted:", currentGuess);
+            console.log("Guess submitted:", currentGuess);
 
-        checkGuess();
+            checkGuess();
 
-        if (currentRow < ROWS - 1) {
-            currentRow++;
-            currentGuess = "";
+            if (currentRow < ROWS - 1) {
+                currentRow++;
+                currentGuess = "";
+            }
         }
-    }
 
-    return;
-}
+        return;
+    }
 
 
     // Letters only
@@ -92,7 +92,11 @@ function updateBoard() {
 
         tile.textContent = currentGuess[col] || "";
     }
-}function checkGuess() {
+}
+
+
+// Check the guess
+function checkGuess() {
 
     const row = board.children[currentRow];
 
@@ -116,6 +120,7 @@ function updateBoard() {
             remainingLetters[i] = null;
         }
     }
+
 
     // Second pass: check yellow and green
     for (let i = 0; i < COLS; i++) {
@@ -145,7 +150,10 @@ function updateBoard() {
         }
     }
 }
-async function testSupabase() {
+
+
+// Test the Supabase connection
+async function test() {
 
     const { data, error } = await supabase
         .from("puzzles")
@@ -154,6 +162,7 @@ async function testSupabase() {
         .single();
 
     if (error) {
+
         console.error("Supabase error:", error);
         return;
     }
@@ -161,4 +170,4 @@ async function testSupabase() {
     console.log("Word from Supabase:", data.word);
 }
 
-testSupabase();
+test();
