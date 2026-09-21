@@ -192,10 +192,73 @@ async function checkGuess() {
     // Check if the player solved it
     if (data.correct) {
 
-        console.log("🎉 Puzzle solved!");
+    console.log("🎉 Puzzle solved!");
 
+    // Ask for the player's name if we don't know it yet
+    if (!playerName) {
+
+        playerName = prompt("You solved it! Enter your name:");
+
+        // Don't allow an empty name
+        if (!playerName || playerName.trim() === "") {
+            alert("You need to enter a name to get on the leaderboard.");
+            return true;
+        }
+
+        playerName = playerName.trim();
+
+        // Remember the name
+        localStorage.setItem(
+            "wordshift_player_name",
+            playerName
+        );
     }
 
+
+    // Give the player one point
+    const { data: scoreData, error: scoreError } = await db.rpc(
+        "submit_wordshift_score",
+        {
+            player_id_input: playerId,
+            player_name_input: playerName,
+            solved_word: currentGuess
+        }
+    );
+
+
+    if (scoreError) {
+
+        console.error("Score error:", scoreError);
+        alert("Your score couldn't be saved.");
+
+        return true;
+    }
+
+
+    console.log("Score result:", scoreData);
+
+
+    if (scoreData.success) {
+
+        if (scoreData.new_point) {
+
+            alert(
+                "🎉 You solved it!\n\n" +
+                "+1 point\n" +
+                "Your score: " +
+                scoreData.points
+            );
+
+        } else {
+
+            alert(
+                "You already solved this puzzle!\n\n" +
+                "Your score: " +
+                scoreData.points
+            );
+        }
+    }
+}
 
     // Tell the keyboard handler that this was a valid guess
     return true;
