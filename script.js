@@ -97,81 +97,56 @@ function updateBoard() {
 
 
 // Check the guess
-function checkGuess() {
+async function checkGuess() {
 
     const row = board.children[currentRow];
 
-    // Keep track of letters still available in the answer
-    let remainingLetters = ANSWER.split("");
+    // Send the guess to Supabase
+    const { data, error } = await db.rpc(
+        "check_wordshift_guess",
+        {
+            guess: currentGuess
+        }
+    );
 
-    // First pass: check correct letters
+    // Check for an error
+    if (error) {
+        console.error("Guess error:", error);
+        return;
+    }
+
+    console.log("Guess result:", data);
+
+    // Get the result from Supabase
+    const result = data.result;
+
+    // Color each tile
     for (let i = 0; i < COLS; i++) {
-
-        const guessedLetter = currentGuess[i];
-        const answerLetter = ANSWER[i];
 
         const tile = row.children[i];
 
-        if (guessedLetter === answerLetter) {
+        if (result[i] === "R") {
 
+            // Correct letter, correct position
             tile.style.backgroundColor = "red";
             tile.style.color = "white";
 
-            // Remove this letter from the available letters
-            remainingLetters[i] = null;
-        }
-    }
+        } else if (result[i] === "Y") {
 
-
-    // Second pass: check yellow and green
-    for (let i = 0; i < COLS; i++) {
-
-        const guessedLetter = currentGuess[i];
-        const tile = row.children[i];
-
-        // Skip letters that were already red
-        if (guessedLetter === ANSWER[i]) {
-            continue;
-        }
-
-        const letterIndex = remainingLetters.indexOf(guessedLetter);
-
-        if (letterIndex !== -1) {
-
+            // Letter exists, wrong position
             tile.style.backgroundColor = "#d6b800";
             tile.style.color = "white";
 
-            // Use up this occurrence of the letter
-            remainingLetters[letterIndex] = null;
-
         } else {
 
+            // Letter isn't in the answer
             tile.style.backgroundColor = "green";
             tile.style.color = "white";
         }
     }
-}
 
-
-// Test the Supabase connection
-async function test() {
-
- const { data, error } = await db
-        .from("puzzles")
-        .select("word")
-        .eq("id", 1)
-        .single();
-
-    if (error) {
-
-console.error("Supabase error message:", error.message);
-console.error("Supabase error details:", error.details);
-console.error("Supabase error hint:", error.hint);
-console.error("Supabase error code:", error.code);
-        return;
+    // Check if the player solved it
+    if (data.correct) {
+        console.log("🎉 Puzzle solved!");
     }
-
-    console.log("Word from Supabase:", data.word);
 }
-
-test();
