@@ -16,6 +16,23 @@ const ANSWER = "APPLE";
 let currentGuess = "";
 let currentRow = 0;
 
+// Get the player's saved ID
+let playerId = localStorage.getItem("wordshift_player_id");
+
+// If they don't have one, create one
+if (!playerId) {
+    playerId = crypto.randomUUID();
+
+    localStorage.setItem(
+        "wordshift_player_id",
+        playerId
+    );
+}
+
+
+// Get the player's saved name
+let playerName = localStorage.getItem("wordshift_player_name");
+
 
 // Create the game board
 for (let row = 0; row < ROWS; row++) {
