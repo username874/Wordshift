@@ -149,3 +149,19 @@ async function checkGuess() {
         console.log("🎉 Puzzle solved!");
     }
 }
+const puzzleChannel = db
+    .channel("puzzle-changes")
+    .on(
+        "postgres_changes",
+        {
+            event: "UPDATE",
+            schema: "public",
+            table: "puzzles"
+        },
+        function(payload) {
+
+            console.log("Puzzle changed!", payload);
+
+        }
+    )
+    .subscribe();
