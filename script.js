@@ -7,7 +7,6 @@ const db = window.supabase.createClient(
 );
 
 
-
 const board = document.getElementById("game-board");
 
 const ROWS = 10;
@@ -38,6 +37,7 @@ for (let row = 0; row < ROWS; row++) {
 
 // Listen for keyboard presses
 document.addEventListener("keydown", async function(event) {
+
     // Backspace
     if (event.key === "Backspace") {
 
@@ -57,16 +57,20 @@ document.addEventListener("keydown", async function(event) {
 
             console.log("Guess submitted:", currentGuess);
 
-         const valid = await checkGuess();
+            const valid = await checkGuess();
 
-if (!valid) {
-    return;
-}
+            // Invalid word: stay on the same row
+            if (!valid) {
+                return;
+            }
 
-if (currentRow < ROWS - 1) {
-    currentRow++;
-    currentGuess = "";
-}
+            // Valid word: move to the next row
+            if (currentRow < ROWS - 1) {
+
+                currentRow++;
+                currentGuess = "";
+
+            }
         }
 
         return;
@@ -80,6 +84,7 @@ if (currentRow < ROWS - 1) {
 
             currentGuess += event.key.toUpperCase();
             updateBoard();
+
         }
     }
 });
@@ -112,21 +117,39 @@ async function checkGuess() {
         }
     );
 
+
     // Check for an error
     if (error) {
+
         console.error("Guess error:", error);
-        return;
+
+        return false;
     }
+
 
     console.log("Guess result:", data);
 
+
+    // Check if the word exists in our word list
+    if (!data.valid) {
+
+        console.log("Not a valid word!");
+
+        alert("Not a valid word!");
+
+        return false;
+    }
+
+
     // Get the result from Supabase
     const result = data.result;
+
 
     // Color each tile
     for (let i = 0; i < COLS; i++) {
 
         const tile = row.children[i];
+
 
         if (result[i] === "R") {
 
@@ -148,11 +171,21 @@ async function checkGuess() {
         }
     }
 
+
     // Check if the player solved it
     if (data.correct) {
+
         console.log("🎉 Puzzle solved!");
+
     }
+
+
+    // Tell the keyboard handler that this was a valid guess
+    return true;
 }
+
+
+// Listen for a new puzzle
 const puzzleChannel = db
     .channel("puzzle-changes")
     .on(
@@ -164,25 +197,27 @@ const puzzleChannel = db
         },
         function(payload) {
 
-    console.log("Puzzle changed!", payload);
+            console.log("Puzzle changed!", payload);
 
-    // Clear the board
-    for (let row = 0; row < ROWS; row++) {
 
-        for (let col = 0; col < COLS; col++) {
+            // Clear the board
+            for (let row = 0; row < ROWS; row++) {
 
-            const tile = board.children[row].children[col];
+                for (let col = 0; col < COLS; col++) {
 
-            tile.textContent = "";
-            tile.style.backgroundColor = "";
-            tile.style.color = "";
+                    const tile = board.children[row].children[col];
+
+                    tile.textContent = "";
+                    tile.style.backgroundColor = "";
+                    tile.style.color = "";
+                }
+            }
+
+
+            // Start the new puzzle from the first row
+            currentGuess = "";
+            currentRow = 0;
+
         }
-    }
-
-    // Start the new puzzle from the first row
-    currentGuess = "";
-    currentRow = 0;
-
-}
     )
     .subscribe();
