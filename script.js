@@ -57,12 +57,16 @@ document.addEventListener("keydown", async function(event) {
 
             console.log("Guess submitted:", currentGuess);
 
-         await   checkGuess();
+         const valid = await checkGuess();
 
-            if (currentRow < ROWS - 1) {
-                currentRow++;
-                currentGuess = "";
-            }
+if (!valid) {
+    return;
+}
+
+if (currentRow < ROWS - 1) {
+    currentRow++;
+    currentGuess = "";
+}
         }
 
         return;
