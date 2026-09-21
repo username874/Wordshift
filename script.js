@@ -37,8 +37,7 @@ for (let row = 0; row < ROWS; row++) {
 
 
 // Listen for keyboard presses
-document.addEventListener("keydown", function(event) {
-
+document.addEventListener("keydown", async function(event) {
     // Backspace
     if (event.key === "Backspace") {
 
@@ -58,7 +57,7 @@ document.addEventListener("keydown", function(event) {
 
             console.log("Guess submitted:", currentGuess);
 
-            checkGuess();
+         await   checkGuess();
 
             if (currentRow < ROWS - 1) {
                 currentRow++;
