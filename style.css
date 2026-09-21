@@ -2,3 +2,29 @@ body {
     font-family: Arial, sans-serif;
     text-align: center;
 }
+
+#game-board {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.row {
+    display: flex;
+    gap: 5px;
+}
+
+.tile {
+    width: 60px;
+    height: 60px;
+
+    border: 2px solid #ccc;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 32px;
+    font-weight: bold;
+}
