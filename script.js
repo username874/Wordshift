@@ -1,3 +1,14 @@
+
+const SUPABASE_URL = "https://lkcthtrseqstnrvijijv.supabase.co";
+const SUPABASE_KEY = "sb_publishable_BedJB-132V5jgbiu493sEQ_l0PBqTs7";
+
+const supabase = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+
 const board = document.getElementById("game-board");
 
 const ROWS = 10;
