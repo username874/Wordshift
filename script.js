@@ -164,7 +164,10 @@ async function test() {
 
     if (error) {
 
-        console.error("Supabase error:", error);
+console.error("Supabase error message:", error.message);
+console.error("Supabase error details:", error.details);
+console.error("Supabase error hint:", error.hint);
+console.error("Supabase error code:", error.code);
         return;
     }
 
