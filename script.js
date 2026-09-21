@@ -94,8 +94,22 @@ function checkGuess() {
 
         const tile = row.children[i];
 
+        // Correct letter and correct position
         if (guessedLetter === answerLetter) {
+
             tile.style.backgroundColor = "red";
+            tile.style.color = "white";
+
+        // Letter exists somewhere in the answer
+        } else if (ANSWER.includes(guessedLetter)) {
+
+            tile.style.backgroundColor = "yellow";
+            tile.style.color = "white";
+
+        // Letter isn't anywhere in the answer
+        } else {
+
+            tile.style.backgroundColor = "green";
             tile.style.color = "white";
         }
     }
