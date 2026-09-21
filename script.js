@@ -82,11 +82,14 @@ function updateBoard() {
 
         tile.textContent = currentGuess[col] || "";
     }
-}
-function checkGuess() {
+}function checkGuess() {
 
     const row = board.children[currentRow];
 
+    // Keep track of letters still available in the answer
+    let remainingLetters = ANSWER.split("");
+
+    // First pass: check correct letters
     for (let i = 0; i < COLS; i++) {
 
         const guessedLetter = currentGuess[i];
@@ -94,19 +97,37 @@ function checkGuess() {
 
         const tile = row.children[i];
 
-        // Correct letter and correct position
         if (guessedLetter === answerLetter) {
 
             tile.style.backgroundColor = "red";
             tile.style.color = "white";
 
-        // Letter exists somewhere in the answer
-        } else if (ANSWER.includes(guessedLetter)) {
+            // Remove this letter from the available letters
+            remainingLetters[i] = null;
+        }
+    }
 
-            tile.style.backgroundColor = "yellow";
+    // Second pass: check yellow and green
+    for (let i = 0; i < COLS; i++) {
+
+        const guessedLetter = currentGuess[i];
+        const tile = row.children[i];
+
+        // Skip letters that were already red
+        if (guessedLetter === ANSWER[i]) {
+            continue;
+        }
+
+        const letterIndex = remainingLetters.indexOf(guessedLetter);
+
+        if (letterIndex !== -1) {
+
+            tile.style.backgroundColor = "#d6b800";
             tile.style.color = "white";
 
-        // Letter isn't anywhere in the answer
+            // Use up this occurrence of the letter
+            remainingLetters[letterIndex] = null;
+
         } else {
 
             tile.style.backgroundColor = "green";
