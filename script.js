@@ -1,10 +1,11 @@
 const SUPABASE_URL = "https://lkcthtrseqstnrvijijv.supabase.co";
 const SUPABASE_KEY = "sb_publishable_BedJB-132V5jgbiu493sEQ_l0PBqTs7";
 
-window.wordshiftSupabase = window.supabase.createClient(
+const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
 
 
 const board = document.getElementById("game-board");
@@ -155,7 +156,7 @@ function checkGuess() {
 // Test the Supabase connection
 async function test() {
 
-    const { data, error } = await window.wordshiftSupabase
+ const { data, error } = await db
         .from("puzzles")
         .select("word")
         .eq("id", 1)
