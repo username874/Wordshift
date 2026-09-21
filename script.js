@@ -1,8 +1,8 @@
 const board = document.getElementById("game-board");
-
+const ANSWER = "APPLE";
 const ROWS = 10;
 const COLS = 5;
-
+const ANSWER = "APPLE";
 let currentGuess = "";
 let currentRow = 0;
 
@@ -40,21 +40,23 @@ document.addEventListener("keydown", function(event) {
 
 
     // Enter
-    if (event.key === "Enter") {
+    // Enter
+if (event.key === "Enter") {
 
-        if (currentGuess.length === COLS) {
+    if (currentGuess.length === COLS) {
 
-            console.log("Guess submitted:", currentGuess);
+        console.log("Guess submitted:", currentGuess);
 
-            // Move to the next row
-            if (currentRow < ROWS - 1) {
-                currentRow++;
-                currentGuess = "";
-            }
+        checkGuess();
+
+        if (currentRow < ROWS - 1) {
+            currentRow++;
+            currentGuess = "";
         }
-
-        return;
     }
+
+    return;
+}
 
 
     // Letters only
@@ -79,5 +81,18 @@ function updateBoard() {
         const tile = row.children[col];
 
         tile.textContent = currentGuess[col] || "";
+    }
+}
+function checkGuess() {
+
+    for (let i = 0; i < COLS; i++) {
+
+        const guessedLetter = currentGuess[i];
+        const answerLetter = ANSWER[i];
+
+        console.log(
+            guessedLetter,
+            answerLetter
+        );
     }
 }
