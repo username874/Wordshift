@@ -38,15 +38,24 @@ document.addEventListener("keydown", function(event) {
         return;
     }
 
+
     // Enter
     if (event.key === "Enter") {
 
         if (currentGuess.length === COLS) {
+
             console.log("Guess submitted:", currentGuess);
+
+            // Move to the next row
+            if (currentRow < ROWS - 1) {
+                currentRow++;
+                currentGuess = "";
+            }
         }
 
         return;
     }
+
 
     // Letters only
     if (/^[a-zA-Z]$/.test(event.key)) {
@@ -58,3 +67,17 @@ document.addEventListener("keydown", function(event) {
         }
     }
 });
+
+
+// Update the tiles
+function updateBoard() {
+
+    const row = board.children[currentRow];
+
+    for (let col = 0; col < COLS; col++) {
+
+        const tile = row.children[col];
+
+        tile.textContent = currentGuess[col] || "";
+    }
+}
