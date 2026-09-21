@@ -57,4 +57,4 @@ document.addEventListener("keydown", function(event) {
             updateBoard();
         }
     }
-};
+});
