@@ -6,35 +6,32 @@ const db = window.supabase.createClient(
     SUPABASE_KEY
 );
 
-
 const board = document.getElementById("game-board");
 
 const ROWS = 10;
 const COLS = 5;
-const ANSWER = "APPLE";
 
 let currentGuess = "";
 let currentRow = 0;
+let puzzleSolved = false;
 
-// Get the player's saved ID
+// -------------------------
+// Player identity
+// -------------------------
+
 let playerId = localStorage.getItem("wordshift_player_id");
 
-// If they don't have one, create one
 if (!playerId) {
     playerId = crypto.randomUUID();
-
-    localStorage.setItem(
-        "wordshift_player_id",
-        playerId
-    );
+    localStorage.setItem("wordshift_player_id", playerId);
 }
 
-
-// Get the player's saved name
 let playerName = localStorage.getItem("wordshift_player_name");
 
+// -------------------------
+// Create game board
+// -------------------------
 
-// Create the game board
 for (let row = 0; row < ROWS; row++) {
 
     const rowElement = document.createElement("div");
@@ -51,8 +48,10 @@ for (let row = 0; row < ROWS; row++) {
     board.appendChild(rowElement);
 }
 
+// -------------------------
+// Keyboard input
+// -------------------------
 
-// Listen for keyboard presses
 document.addEventListener("keydown", async function(event) {
 
     // Backspace
@@ -60,54 +59,59 @@ document.addEventListener("keydown", async function(event) {
 
         event.preventDefault();
 
-        currentGuess = currentGuess.slice(0, -1);
-        updateBoard();
+        if (!puzzleSolved) {
+            currentGuess = currentGuess.slice(0, -1);
+            updateBoard();
+        }
 
         return;
     }
 
-
     // Enter
     if (event.key === "Enter") {
 
-        if (currentGuess.length === COLS) {
+        if (
+            currentGuess.length === COLS &&
+            !puzzleSolved
+        ) {
 
             console.log("Guess submitted:", currentGuess);
 
             const valid = await checkGuess();
 
-            // Invalid word: stay on the same row
             if (!valid) {
                 return;
             }
 
-            // Valid word: move to the next row
-            if (currentRow < ROWS - 1) {
-
+            // Don't move to another row if the puzzle was solved.
+            if (!puzzleSolved && currentRow < ROWS - 1) {
                 currentRow++;
                 currentGuess = "";
-
+                updateBoard();
             }
         }
 
         return;
     }
 
-
-    // Letters only
+    // Letters
     if (/^[a-zA-Z]$/.test(event.key)) {
 
-        if (currentGuess.length < COLS) {
+        if (
+            currentGuess.length < COLS &&
+            !puzzleSolved
+        ) {
 
             currentGuess += event.key.toUpperCase();
             updateBoard();
-
         }
     }
 });
 
+// -------------------------
+// Update board
+// -------------------------
 
-// Update the tiles
 function updateBoard() {
 
     const row = board.children[currentRow];
@@ -120,53 +124,50 @@ function updateBoard() {
     }
 }
 
+// -------------------------
+// Check guess
+// -------------------------
 
-// Check the guess
 async function checkGuess() {
 
     const row = board.children[currentRow];
 
-    // Send the guess to Supabase
     const { data, error } = await db.rpc(
         "check_wordshift_guess",
         {
-            guess: currentGuess
+            guess: currentGuess,
+            player_id_input: playerId
         }
     );
 
-
-    // Check for an error
     if (error) {
 
         console.error("Guess error:", error);
 
+        alert("There was an error checking your guess.");
+
         return false;
     }
 
-
     console.log("Guess result:", data);
 
-
-    // Check if the word exists in our word list
+    // Invalid word
     if (!data.valid) {
-
-        console.log("Not a valid word!");
 
         alert("Not a valid word!");
 
         return false;
     }
 
+    // -------------------------
+    // Display result
+    // -------------------------
 
-    // Get the result from Supabase
     const result = data.result;
 
-
-    // Color each tile
     for (let i = 0; i < COLS; i++) {
 
         const tile = row.children[i];
-
 
         if (result[i] === "R") {
 
@@ -176,96 +177,183 @@ async function checkGuess() {
 
         } else if (result[i] === "Y") {
 
-            // Letter exists, wrong position
+            // Correct letter, wrong position
             tile.style.backgroundColor = "#d6b800";
             tile.style.color = "white";
 
         } else {
 
-            // Letter isn't in the answer
+            // Letter isn't in the word
             tile.style.backgroundColor = "green";
             tile.style.color = "white";
         }
     }
 
+    // -------------------------
+    // Puzzle solved
+    // -------------------------
 
-    // Check if the player solved it
     if (data.correct) {
 
-    console.log("🎉 Puzzle solved!");
+        puzzleSolved = true;
 
-    // Ask for the player's name if we don't know it yet
-    if (!playerName) {
+        console.log("🎉 Puzzle solved!");
+        console.log("Solved puzzle ID:", data.puzzle_id);
+        console.log("Solved word:", data.solved_word);
 
-        playerName = prompt("You solved it! Enter your name:");
+        // Ask for name if we don't already have one
+        if (!playerName) {
 
-        // Don't allow an empty name
-        if (!playerName || playerName.trim() === "") {
-            alert("You need to enter a name to get on the leaderboard.");
+            playerName = prompt(
+                "You solved it! Enter your name:"
+            );
+
+            if (!playerName || playerName.trim() === "") {
+
+                alert(
+                    "You need to enter a name to get on the leaderboard."
+                );
+
+                return true;
+            }
+
+            playerName = playerName.trim();
+
+            localStorage.setItem(
+                "wordshift_player_name",
+                playerName
+            );
+        }
+
+        // -------------------------
+        // Give the player a point
+        // -------------------------
+
+        const {
+            data: scoreData,
+            error: scoreError
+        } = await db.rpc(
+            "submit_wordshift_score",
+            {
+                player_id_input: playerId,
+                player_name_input: playerName,
+                solved_word_input: data.solved_word,
+                puzzle_id_input: data.puzzle_id
+            }
+        );
+
+        if (scoreError) {
+
+            console.error(
+                "Score error:",
+                scoreError
+            );
+
+            alert(
+                "Your score couldn't be saved."
+            );
+
             return true;
         }
 
-        playerName = playerName.trim();
-
-        // Remember the name
-        localStorage.setItem(
-            "wordshift_player_name",
-            playerName
+        console.log(
+            "Score result:",
+            scoreData
         );
-    }
 
+        if (scoreData.success) {
 
-    // Give the player one point
-    const { data: scoreData, error: scoreError } = await db.rpc(
-        "submit_wordshift_score",
-        {
-            player_id_input: playerId,
-            player_name_input: playerName,
-            solved_word: currentGuess
-        }
-    );
+            if (scoreData.new_point) {
 
+                alert(
+                    "🎉 You solved it!\n\n" +
+                    "+1 point\n" +
+                    "Your score: " +
+                    scoreData.points
+                );
 
-    if (scoreError) {
+            } else {
 
-        console.error("Score error:", scoreError);
-        alert("Your score couldn't be saved.");
+                alert(
+                    "You already solved this puzzle!\n\n" +
+                    "Your score: " +
+                    scoreData.points
+                );
+            }
 
-        return true;
-    }
-
-
-    console.log("Score result:", scoreData);
-
-
-    if (scoreData.success) {
-
-        if (scoreData.new_point) {
-
-            alert(
-                "🎉 You solved it!\n\n" +
-                "+1 point\n" +
-                "Your score: " +
-                scoreData.points
-            );
-
-        } else {
-
-            alert(
-                "You already solved this puzzle!\n\n" +
-                "Your score: " +
-                scoreData.points
-            );
+            // Refresh leaderboard immediately
+            loadLeaderboard();
         }
     }
-}
 
-    // Tell the keyboard handler that this was a valid guess
     return true;
 }
 
+// -------------------------
+// Load leaderboard
+// -------------------------
 
-// Listen for a new puzzle
+async function loadLeaderboard() {
+
+    const {
+        data,
+        error
+    } = await db
+        .from("leaderboard")
+        .select("name, points")
+        .order("points", {
+            ascending: false
+        })
+        .order("name", {
+            ascending: true
+        })
+        .limit(50);
+
+    if (error) {
+
+        console.error(
+            "Leaderboard error:",
+            error
+        );
+
+        return;
+    }
+
+    const list =
+        document.getElementById(
+            "leaderboard-list"
+        );
+
+    if (!list) {
+        return;
+    }
+
+    list.innerHTML = "";
+
+    data.forEach(function(player, index) {
+
+        const row =
+            document.createElement("div");
+
+        row.textContent =
+            (index + 1) +
+            ". " +
+            player.name +
+            " — " +
+            player.points +
+            " points";
+
+        list.appendChild(row);
+    });
+}
+
+// Load leaderboard when the page starts
+loadLeaderboard();
+
+// -------------------------
+// Realtime puzzle updates
+// -------------------------
+
 const puzzleChannel = db
     .channel("puzzle-changes")
     .on(
@@ -277,59 +365,70 @@ const puzzleChannel = db
         },
         function(payload) {
 
-            console.log("Puzzle changed!", payload);
+            console.log(
+                "Puzzle changed!",
+                payload
+            );
 
+            // Reset the board
+            for (
+                let row = 0;
+                row < ROWS;
+                row++
+            ) {
 
-            // Clear the board
-            for (let row = 0; row < ROWS; row++) {
+                for (
+                    let col = 0;
+                    col < COLS;
+                    col++
+                ) {
 
-                for (let col = 0; col < COLS; col++) {
-
-                    const tile = board.children[row].children[col];
+                    const tile =
+                        board
+                            .children[row]
+                            .children[col];
 
                     tile.textContent = "";
+
                     tile.style.backgroundColor = "";
+
                     tile.style.color = "";
                 }
             }
 
-
-            // Start the new puzzle from the first row
             currentGuess = "";
             currentRow = 0;
+            puzzleSolved = false;
 
+            updateBoard();
+
+            // Refresh leaderboard too
+            loadLeaderboard();
         }
     )
     .subscribe();
-async function loadLeaderboard() {
-    const { data, error } = await db
-        .from("leaderboard")
-        .select("name, points")
-        .order("points", { ascending: false })
-        .order("name", { ascending: true })
-        .limit(50);
 
-    if (error) {
-        console.error("Leaderboard error:", error);
-        return;
-    }
+// -------------------------
+// Realtime leaderboard updates
+// -------------------------
 
-    const list = document.getElementById("leaderboard-list");
+const leaderboardChannel = db
+    .channel("leaderboard-changes")
+    .on(
+        "postgres_changes",
+        {
+            event: "*",
+            schema: "public",
+            table: "leaderboard"
+        },
+        function(payload) {
 
-    list.innerHTML = "";
+            console.log(
+                "Leaderboard changed!",
+                payload
+            );
 
-    data.forEach(function(player, index) {
-        const row = document.createElement("div");
-
-        row.textContent =
-            (index + 1) + ". " +
-            player.name +
-            " — " +
-            player.points +
-            " points";
-
-        list.appendChild(row);
-    });
-}
-
-loadLeaderboard();
+            loadLeaderboard();
+        }
+    )
+    .subscribe();
