@@ -301,3 +301,35 @@ const puzzleChannel = db
         }
     )
     .subscribe();
+async function loadLeaderboard() {
+    const { data, error } = await db
+        .from("leaderboard")
+        .select("name, points")
+        .order("points", { ascending: false })
+        .order("name", { ascending: true })
+        .limit(50);
+
+    if (error) {
+        console.error("Leaderboard error:", error);
+        return;
+    }
+
+    const list = document.getElementById("leaderboard-list");
+
+    list.innerHTML = "";
+
+    data.forEach(function(player, index) {
+        const row = document.createElement("div");
+
+        row.textContent =
+            (index + 1) + ". " +
+            player.name +
+            " — " +
+            player.points +
+            " points";
+
+        list.appendChild(row);
+    });
+}
+
+loadLeaderboard();
