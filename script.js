@@ -263,40 +263,44 @@ async function checkGuess() {
 
         if (scoreData.success) {
 
-            if (scoreData.new_point) {
+    if (scoreData.new_point) {
 
-                alert(
-                    "🎉 You solved it!\n\n" +
-                    "+1 point\n" +
-                    "Your score: " +
-                    scoreData.points
-                );
+        alert(
+            "🎉 You solved it!\n\n" +
+            "+1 point\n" +
+            "Your score: " +
+            scoreData.points
+        );
 
-            } else {
+    } else {
 
-                alert(
-                    "You already solved this puzzle!\n\n" +
-                    "Your score: " +
-                    scoreData.points
-                );
-            puzzleSolved = false;
-currentGuess = "";
-currentRow = 0;
-
-for (let row = 0; row < ROWS; row++) {
-    for (let col = 0; col < COLS; col++) {
-        const tile = board.children[row].children[col];
-
-        tile.textContent = "";
-        tile.style.backgroundColor = "";
-        tile.style.color = "";
+        alert(
+            "You already solved this puzzle!\n\n" +
+            "Your score: " +
+            scoreData.points
+        );
     }
-}
-            }
 
-            // Refresh leaderboard immediately
-            loadLeaderboard();
+    // Start the next puzzle
+    puzzleSolved = false;
+    currentGuess = "";
+    currentRow = 0;
+
+    for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+
+            const tile =
+                board.children[row].children[col];
+
+            tile.textContent = "";
+            tile.style.backgroundColor = "";
+            tile.style.color = "";
         }
+    }
+
+    // Refresh leaderboard
+    loadLeaderboard();
+}
     }
 
     return true;
