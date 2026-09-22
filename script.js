@@ -279,6 +279,19 @@ async function checkGuess() {
                     "Your score: " +
                     scoreData.points
                 );
+            puzzleSolved = false;
+currentGuess = "";
+currentRow = 0;
+
+for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+        const tile = board.children[row].children[col];
+
+        tile.textContent = "";
+        tile.style.backgroundColor = "";
+        tile.style.color = "";
+    }
+}
             }
 
             // Refresh leaderboard immediately
