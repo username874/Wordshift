@@ -239,6 +239,7 @@ async function checkGuess() {
                 player_name_input: playerName,
                 solved_word_input: data.solved_word,
                 puzzle_id_input: data.puzzle_id
+                puzzle_version_input: data.puzzle_version
             }
         );
 
